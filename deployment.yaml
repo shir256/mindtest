@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-deployment
+spec:
+  replicas: 4  # Начнем с 4 подов, так как это минимальное количество для пиковой нагрузки
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: web-app-container
+        image: your-web-app-image:latest  # Замените на ваш образ
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"  # Минимальные ресурсы для стабильной работы
+          limits:
+            memory: "256Mi"  # Лимиты для предотвращения перерасхода ресурсов
+            cpu: "500m"
+        readinessProbe:  # Проверка готовности для обработки трафика
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 10  # Даем 10 секунд на инициализацию
+          periodSeconds: 5
+        livenessProbe:  # Проверка живучести для перезапуска подов
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
